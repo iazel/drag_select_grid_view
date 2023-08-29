@@ -990,52 +990,6 @@ void main() {
         skip: false,
       );
     });
-
-    group("Local history.", () {
-      testWidgets(
-        "Given that the grid has an item selected, "
-        "when trying to pop the route, "
-        "then the item gets UNSELECTED.",
-        (tester) async {
-          await setUp(tester);
-
-          // Given that the grid has an item selected,
-          await tester.longPress(firstItemFinder);
-          await tester.pump();
-
-          // when trying to pop the route,
-          // ignore: invalid_use_of_protected_member
-          await tester.binding.handlePopRoute();
-
-          // then the item gets UNSELECTED.
-          expect(dragSelectState.isSelecting, isFalse);
-          expect(dragSelectState.selectedIndexes, <int>{});
-        },
-        skip: false,
-      );
-
-      testWidgets(
-        "Given that the grid has an item selected, "
-        "when clearing the selection through the controller, "
-        "then the widget removes the local history entry.",
-        (tester) async {
-          final controller = DragSelectGridViewController();
-          await setUp(tester, gridController: controller);
-
-          // Given that the grid has an item selected,
-          await tester.longPress(firstItemFinder);
-          await tester.pump();
-
-          // when clearing the selection through the controller,
-          controller.clear();
-
-          // then the widget removes the local history entry.
-          final route = ModalRoute.of(dragSelectState.context);
-          expect(route!.willHandlePopInternally, isFalse);
-        },
-        skip: false,
-      );
-    });
   });
 
   group("Auto-scrolling integration tests.", () {

@@ -94,7 +94,6 @@ class DragSelectGridView extends StatefulWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.restorationId,
     this.clipBehavior = Clip.hardEdge,
-    this.impliesAppBarDismissal = true,
   })  : autoScrollHotspotHeight =
             autoScrollHotspotHeight ?? defaultAutoScrollHotspotHeight,
         scrollController = scrollController ?? ScrollController(),
@@ -184,9 +183,6 @@ class DragSelectGridView extends StatefulWidget {
   /// Refer to [ScrollView.clipBehavior].
   final Clip clipBehavior;
 
-  /// Refer to [LocalHistoryEntry.impliesAppBarDismissal].
-  final bool impliesAppBarDismissal;
-
   @override
   DragSelectGridViewState createState() => DragSelectGridViewState();
 }
@@ -199,7 +195,6 @@ class DragSelectGridViewState extends State<DragSelectGridView>
   final _elements = <SelectableElement>{};
   final _selectionManager = SelectionManager();
   LongPressMoveUpdateDetails? _lastMoveUpdateDetails;
-  LocalHistoryEntry? _historyEntry;
 
   DragSelectGridViewController? get _gridController => widget.gridController;
 
@@ -297,7 +292,6 @@ class DragSelectGridViewState extends State<DragSelectGridView>
       final controllerSelectedIndexes = controller.value.selectedIndexes;
       if (!setEquals(controllerSelectedIndexes, selectedIndexes)) {
         _selectionManager.selectedIndexes = controllerSelectedIndexes;
-        _updateLocalHistory();
       }
     }
   }
@@ -309,7 +303,6 @@ class DragSelectGridViewState extends State<DragSelectGridView>
       if (tapIndex != -1) {
         setState(() => _selectionManager.tap(tapIndex));
         _notifySelectionChange();
-        _updateLocalHistory();
       }
     }
   }
@@ -320,7 +313,6 @@ class DragSelectGridViewState extends State<DragSelectGridView>
     if (pressIndex != -1) {
       setState(() => _selectionManager.startDrag(pressIndex));
       _notifySelectionChange();
-      _updateLocalHistory();
     }
   }
 
@@ -355,32 +347,6 @@ class DragSelectGridViewState extends State<DragSelectGridView>
   void _handleLongPressEnd(LongPressEndDetails details) {
     setState(_selectionManager.endDrag);
     stopScrolling();
-  }
-
-  void _updateLocalHistory() {
-    final route = ModalRoute.of(context);
-    if (route == null) return;
-
-    if (isSelecting) {
-      if (_historyEntry == null) {
-        final entry = LocalHistoryEntry(
-          impliesAppBarDismissal: widget.impliesAppBarDismissal,
-          onRemove: () {
-            setState(_selectionManager.clear);
-            _notifySelectionChange();
-            _historyEntry = null;
-          },
-        );
-        route.addLocalHistoryEntry(entry);
-        _historyEntry = entry;
-      }
-    } else {
-      final entry = _historyEntry;
-      if (entry != null) {
-        route.removeLocalHistoryEntry(entry);
-        _historyEntry = null;
-      }
-    }
   }
 
   int _findIndexOfSelectable(Offset offset) {
